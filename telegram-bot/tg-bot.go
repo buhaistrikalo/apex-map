@@ -49,9 +49,15 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
+		log.Printf("Got update: %v", update.Message)
 		if update.Message != nil { 
-			if update.Message.Text == "/map" {
+			command := update.Message.Command()
+			if command == "map" {
 				sendMap(bot, update.Message.Chat.ID, update.Message.Date)
+			}
+			if command == "ping" {
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "pong")
+				bot.Send(msg)
 			}
 		} else if update.CallbackQuery != nil {
 			chatID := update.CallbackQuery.Message.Chat.ID
@@ -82,8 +88,11 @@ func sendMap(bot *tgbotapi.BotAPI, chatID int64, date int) {
 	var nextMapTime string = response.NextMapTime
 
 	var mapImage string = getMapImage(mapName)
-	file, _ := os.Open(mapImage)
-
+	file, err := os.Open(mapImage)
+	if err != nil {
+		log.Println("Failed to open image:", err)
+		return
+	}
 	reader := tgbotapi.FileReader{Name: "image.jpg", Reader: file}
 	msg := tgbotapi.NewPhoto(chatID, reader)
 	msg.Caption = "🖼 Карта: " + mapName + "\n⌛ Осталось: " + duration + "\n\nСледующая карта: " + nextMap + " - " + translateTime(nextMapTime)
@@ -94,13 +103,13 @@ func sendMap(bot *tgbotapi.BotAPI, chatID int64, date int) {
 func getMapImage(mapName string) string {
 	var mapImage string
 	if mapName == "Storm Point" {
-		mapImage = "../image/storm_point.webp"
+		mapImage = "./images/storm_point.webp"
 	} else if mapName == "World's Edge" {
-		mapImage = "../image/worlds_edge.webp"
+		mapImage = "./images/worlds_edge.webp"
 	} else if mapName == "Broken Moon" {
-		mapImage = "../image/broken_moon.webp"
+		mapImage = "./images/broken_moon.webp"
 	} else {
-		mapImage = "../image/olympus.webp"
+		mapImage = "./images/olympus.webp"
 	}
 	return mapImage
 }
@@ -121,26 +130,27 @@ func getMap(time int64) (*Response, error) {
 
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
-        fmt.Println(err)
+		fmt.Println("Failed to get map: %v\n", err)
         return nil, err
     }
 
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
-        fmt.Println(err)
+		fmt.Println("Failed to get map 1: %v\n", err)
         return nil, err
     }
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Failed to get map 2: %v\n", err)
 		return nil, err
 	}
 
 	var response Response
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
+		fmt.Println("Failed to get map 3: %v\n", err)
 		return nil, err
 	}
 

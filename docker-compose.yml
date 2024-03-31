@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  server:
+    build: server/
+    ports:
+      - "7070:7070"
+  telegram-bot:
+    build: telegram-bot/
+    ports:
+      - "7071:7071"

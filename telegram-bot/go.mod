@@ -1,4 +1,4 @@
-module tgbotapi
+module github.com/buhaistrikalo/apex-map/telegram-bot
 
 go 1.21.3
 

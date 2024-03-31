@@ -1,4 +1,4 @@
-module server
+module github.com/buhaistrikalo/apex-map/server
 
 go 1.21.3
 
