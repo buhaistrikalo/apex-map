@@ -2,9 +2,9 @@ name: Build Docker Image and Push to Evolution Artifact Registry
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +21,8 @@ jobs:
           registry: ${{ secrets.CR_URI }}
           username: ${{ secrets.EVO_CR_LOGIN }}
           password: ${{ secrets.EVO_CR_PWD }}
+      - name: Add env file
+        run: cp ${SERVER_ENV_FILE} ./server/.env
 
       - name: Go - Build and push docker image to Evolution Aritfact Registry
         uses: docker/build-push-action@v5
