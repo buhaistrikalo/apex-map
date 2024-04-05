@@ -52,8 +52,8 @@ jobs:
           key: ${{ secrets.SSHKEY }}
           envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME
           script: |
-            # Login into Cloud Registry
-            docker login -u ${{ secrets.CLOUD_KEY_SECRET }} -p ${{ secrets.CLOUD_KEY_SECRET }} $(echo ${{ secrets.CR_URI }})
+            # Вход в облачный реестр
+            echo ${{ secrets.CLOUD_KEY_SECRET }} | docker login -u ${{ secrets.CLOUD_KEY_SECRET }} --password-stdin $(echo ${{ secrets.CR_URI }})
 
             # Stop running container
             docker stop $(echo $CONTAINER_NAME)
