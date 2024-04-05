@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: ["main"]
 env:
-  REGISTRY: "apex-map321.cr.cloud.ru/apex-map"
+  REGISTRY: "apex-map321.cr.cloud.ru"
   IMAGE_NAME: "apex-server-go"
   CONTAINER_NAME: "apex-server"
 jobs:
@@ -53,7 +53,7 @@ jobs:
           envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME
           script: |
             # Login into Cloud Registry
-            docker login -u ${{ secrets.CLOUD_KEY_SECRET }} -p ${{ secrets.CLOUD_KEY_SECRET }} $(echo $REGISTRY)
+            docker login -u ${{ secrets.CLOUD_KEY_SECRET }} -p ${{ secrets.CLOUD_KEY_SECRET }} $(echo ${{ secrets.CR_URI }})
 
             # Stop running container
             docker stop $(echo $CONTAINER_NAME)
@@ -66,4 +66,4 @@ jobs:
             --restart always \
             --publish 7070:7070 \
             --name $(echo $CONTAINER_NAME) \
-            $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo ${{ github.sha }} | head -c7)
+            $(echo ${{ secrets.CR_URI }})/$(echo $IMAGE_NAME):$(echo ${{ github.sha }} | head -c7)
