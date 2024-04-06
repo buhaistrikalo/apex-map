@@ -51,7 +51,6 @@ jobs:
           registry: ${{ secrets.CR_URI }}
           username: ${{ secrets.EVO_CR_LOGIN }}
           password: ${{ secrets.EVO_CR_PWD }}
-
       - name: Deploy to Cloud via SSH action
         uses: appleboy/ssh-action@master
         with:
