@@ -37,7 +37,7 @@ jobs:
         with:
           push: true
           envs: IMAGE_NAME
-          tags: ${{ secrets.CR_URI }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+          tags: ${{ secrets.CR_URI }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           file: ./server/Dockerfile
           context: ./server
   deploy:
@@ -61,14 +61,14 @@ jobs:
           envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME
           script: |
             # Stop running container
-            docker stop $(echo $CONTAINER_NAME)
+            docker stop $(echo ${{ env.IMAGE_NAME }})
 
             # Remove old container
-            docker rm $(echo $CONTAINER_NAME)
+            docker rm $(echo ${{ env.IMAGE_NAME }})
 
             # Run a new container from a new image
             docker run \
             --restart always \
             --publish 7070:7070 \
-            --name $(echo $CONTAINER_NAME) \
+            --name $(echo ${{ env.IMAGE_NAME }}) \
             $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME }}):$(echo ${{ github.sha }} | head -c7)
