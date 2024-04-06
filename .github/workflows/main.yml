@@ -37,7 +37,7 @@ jobs:
         with:
           push: true
           envs: IMAGE_NAME
-          tags: ${{ secrets.CR_URI }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ secrets.CR_URI }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
           file: ./server/Dockerfile
           context: ./server
   deploy:
