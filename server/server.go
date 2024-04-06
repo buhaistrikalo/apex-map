@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"os"
-
 	"github.com/joho/godotenv"
 )
 
@@ -24,7 +22,7 @@ func main() {
 	if err != nil {
 	  log.Fatal("Error loading .env file")
 	}
-	port := os.Getenv("SERVER_PORT")
+	port := "7070"
 
 	http.HandleFunc("/api/apex-map", apexMapCheckerHandler)
 	http.HandleFunc("/api/apex-map/{timestamp}", apexMapCheckerHandler)
@@ -38,7 +36,7 @@ func main() {
 
 func apexMapCheckerHandler(w http.ResponseWriter, r *http.Request) {
 	var timestamp int64 
-	timeOwn := os.Getenv("SERVER_TIMESTOMP")
+	timeOwn := "1711845000"
 	timeOwnInt, err := strconv.ParseInt(timeOwn, 10, 64)
 	if err != nil {
 		log.Println("Failed to parse timeOwn:", err)
