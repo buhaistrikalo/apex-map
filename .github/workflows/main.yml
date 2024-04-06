@@ -62,7 +62,7 @@ jobs:
             docker rm $(echo ${{ env.IMAGE_NAME }})
 
             # Run a new container from a new image
-            docker run \
+            docker run -d \
             --restart always \
             --publish 7070:7070 \
             --name $(echo ${{ env.IMAGE_NAME }}) \
