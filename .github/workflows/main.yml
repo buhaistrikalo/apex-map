@@ -36,7 +36,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ secrets.CR_URI }}/$IMAGE_NAME:${{ github.sha }}
+          envs: IMAGE_NAME
+          tags: ${{ secrets.CR_URI }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           file: ./server/Dockerfile
           context: ./server
   deploy:
@@ -70,4 +71,4 @@ jobs:
             --restart always \
             --publish 7070:7070 \
             --name $(echo $CONTAINER_NAME) \
-            $(echo ${{ secrets.CR_URI }})/$(echo $IMAGE_NAME):$(echo ${{ github.sha }} | head -c7)
+            $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME }}):$(echo ${{ github.sha }} | head -c7)
