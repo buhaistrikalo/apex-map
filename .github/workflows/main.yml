@@ -66,4 +66,4 @@ jobs:
             --restart always \
             --publish 7070:7070 \
             --name $(echo ${{ env.IMAGE_NAME }}) \
-            $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME }}):$(echo ${{ github.sha }} | head -c7)
+            $(echo ${{ secrets.CR_URI }})/apex-map/$(echo ${{ env.IMAGE_NAME }}):$(echo ${{ github.sha }})
