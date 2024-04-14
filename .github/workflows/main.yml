@@ -11,6 +11,10 @@ env:
   CONTAINER_NAME_SERVER: "apex-server"
   IMAGE_NAME_TG: "apex-tg"
   CONTAINER_NAME_TG: "apex-tg"
+  SERVER_PORT: 7070
+  SERVER_TIMESTOMP: true
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  SERVER_URL: "http://server:7070/"
 jobs:
   build-server:
     runs-on: ubuntu-latest
