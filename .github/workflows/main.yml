@@ -14,7 +14,7 @@ env:
   SERVER_PORT: 7070
   SERVER_TIMESTOMP: true
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-  SERVER_URL: "http://apex-server:7070/"
+  SERVER_URL: "http://apex-map-checker-network:7070/"
 jobs:
   build-server:
     runs-on: ubuntu-latest
