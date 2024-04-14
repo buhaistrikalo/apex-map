@@ -72,7 +72,40 @@ jobs:
           tags: ${{ secrets.CR_URI }}/${{ env.IMAGE_NAME_TG }}:${{ github.sha }}
           file: ./telegram-bot/Dockerfile
           context: ./telegram-bot
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-server, build-tg]
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v3
 
+      - name: Deploy to Cloud via SSH action
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          envs: IMAGE_NAME_SERVER,IMAGE_NAME_TG,REGISTRY,CONTAINER_NAME_SERVER,CONTAINER_NAME_TG
+          script: |
+            # Login
+            echo ${{ secrets.EVO_CR_PWD }} | docker login ${{ secrets.CR_URI }} --username ${{ secrets.EVO_CR_LOGIN }} --password-stdin
+            # Stop running container
+            docker stop $(echo ${{ env.IMAGE_NAME_SERVER }})
+            docker stop $(echo ${{ env.IMAGE_NAME_TG }})
+            # Remove old container
+            docker rm $(echo ${{ env.IMAGE_NAME_SERVER }})
+            docker rm $(echo ${{ env.IMAGE_NAME_TG }})
+            # Run a new container from a new image
+            docker run -d \
+            --restart always \
+            --publish 7070:7070 \
+            --name $(echo ${{ env.CONTAINER_NAME_SERVER }}) \
+            $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME_SERVER }}):$(echo ${{ github.sha }})
+            docker run -d \
+            --restart always \
+            --publish 7071:7071 \
+            --name $(echo ${{ env.CONTAINER_NAME_TG }}) \
+            $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME_TG }}):$(echo ${{ github.sha }})
 
   # deploy:
   #   runs-on: ubuntu-latest
@@ -87,7 +120,7 @@ jobs:
   #         key: ${{ secrets.SSHKEY }}
   #         envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME
   #         script: |
-  #           # Login 
+  #           # Login
   #           echo ${{ secrets.EVO_CR_PWD }} | docker login ${{ secrets.CR_URI }} --username ${{ secrets.EVO_CR_LOGIN }} --password-stdin
   #           # Stop running container
   #           docker stop $(echo ${{ env.IMAGE_NAME }})
