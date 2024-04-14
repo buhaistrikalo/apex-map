@@ -83,14 +83,23 @@ jobs:
       - name: Checkout to the branch
         uses: actions/checkout@v3
 
+      - name: Copy docker-compose.yml to the server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          source: "./docker-compose.yml"
+          target: "/path/to/your/target/directory"
+
       - name: Deploy to Cloud via SSH action
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          envs: IMAGE_NAME_SERVER,IMAGE_NAME_TG,REGISTRY,CONTAINER_NAME_SERVER,CONTAINER_NAME_TG
           script: |
+            cd /path/to/your/target/directory
             # Login
             echo ${{ secrets.EVO_CR_PWD }} | docker login ${{ secrets.CR_URI }} --username ${{ secrets.EVO_CR_LOGIN }} --password-stdin
             # Stop and remove current containers
