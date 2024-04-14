@@ -7,10 +7,12 @@ on:
     branches: ["main"]
 env:
   REGISTRY: "apex-map321.cr.cloud.ru"
-  IMAGE_NAME: "apex-map"
-  CONTAINER_NAME: "apex-server"
+  IMAGE_NAME_SERVER: "apex-server"
+  CONTAINER_NAME_SERVER: "apex-server"
+  IMAGE_NAME_TG: "apex-tg"
+  CONTAINER_NAME_TG: "apex-tg"
 jobs:
-  build:
+  build-server:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout to the branch
@@ -36,34 +38,66 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          envs: IMAGE_NAME
-          tags: ${{ secrets.CR_URI }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          envs: IMAGE_NAME_SERVER
+          tags: ${{ secrets.CR_URI }}/${{ env.IMAGE_NAME_SERVER }}:${{ github.sha }}
           file: ./server/Dockerfile
           context: ./server
-  deploy:
+  build-tg:
     runs-on: ubuntu-latest
-    needs: build
-
     steps:
-      - name: Deploy to Cloud via SSH action
-        uses: appleboy/ssh-action@master
+      - name: Checkout to the branch
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Evolution Artifact Registry
+        uses: docker/login-action@v1
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSHKEY }}
-          envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME
-          script: |
-            # Login 
-            echo ${{ secrets.EVO_CR_PWD }} | docker login ${{ secrets.CR_URI }} --username ${{ secrets.EVO_CR_LOGIN }} --password-stdin
-            # Stop running container
-            docker stop $(echo ${{ env.IMAGE_NAME }})
+          registry: ${{ secrets.CR_URI }}
+          username: ${{ secrets.EVO_CR_LOGIN }}
+          password: ${{ secrets.EVO_CR_PWD }}
+      - name: Add env file
+        run: |
+          touch telegram-bot/.env
+          echo "BOT_TOKEN=${{ env.BOT_TOKEN }}" >> telegram-bot/.env
+          echo "SERVER_URL=${{ env.SERVER_URL }}" >> telegram-bot/.env
+          cat telegram-bot/.env
 
-            # Remove old container
-            docker rm $(echo ${{ env.IMAGE_NAME }})
+      - name: Go - Build and push docker image to Evolution Aritfact Registry
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          envs: IMAGE_NAME_TG
+          tags: ${{ secrets.CR_URI }}/${{ env.IMAGE_NAME_TG }}:${{ github.sha }}
+          file: ./telegram-bot/Dockerfile
+          context: ./telegram-bot
 
-            # Run a new container from a new image
-            docker run -d \
-            --restart always \
-            --publish 7070:7070 \
-            --name $(echo ${{ env.IMAGE_NAME }}) \
-            $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME }}):$(echo ${{ github.sha }})
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+
+  #   steps:
+  #     - name: Deploy to Cloud via SSH action
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.HOST }}
+  #         username: ${{ secrets.USERNAME }}
+  #         key: ${{ secrets.SSHKEY }}
+  #         envs: IMAGE_NAME,REGISTRY,CONTAINER_NAME
+  #         script: |
+  #           # Login 
+  #           echo ${{ secrets.EVO_CR_PWD }} | docker login ${{ secrets.CR_URI }} --username ${{ secrets.EVO_CR_LOGIN }} --password-stdin
+  #           # Stop running container
+  #           docker stop $(echo ${{ env.IMAGE_NAME }})
+
+  #           # Remove old container
+  #           docker rm $(echo ${{ env.IMAGE_NAME }})
+
+  #           # Run a new container from a new image
+  #           docker run -d \
+  #           --restart always \
+  #           --publish 7070:7070 \
+  #           --name $(echo ${{ env.IMAGE_NAME }}) \
+  #           $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME }}):$(echo ${{ github.sha }})
