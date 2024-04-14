@@ -14,7 +14,7 @@ env:
   SERVER_PORT: 7070
   SERVER_TIMESTOMP: true
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-  SERVER_URL: "http://server:7070/"
+  SERVER_URL: "http://apex-server:7070/"
 jobs:
   build-server:
     runs-on: ubuntu-latest
@@ -83,48 +83,33 @@ jobs:
       - name: Checkout to the branch
         uses: actions/checkout@v3
 
-      - name: Copy docker-compose.yml to the server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSHKEY }}
-          source: "./docker-compose.yml"
-          target: "/path/to/your/target/directory"
-
       - name: Deploy to Cloud via SSH action
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
+          envs: IMAGE_NAME_SERVER,IMAGE_NAME_TG,REGISTRY,CONTAINER_NAME_SERVER,CONTAINER_NAME_TG
           script: |
-            cd /path/to/your/target/directory
             # Login
             echo ${{ secrets.EVO_CR_PWD }} | docker login ${{ secrets.CR_URI }} --username ${{ secrets.EVO_CR_LOGIN }} --password-stdin
-            # Stop and remove current containers
-            docker-compose down
-            # Pull the latest versions of your images
-            docker-compose pull
-            # Start containers using docker-compose
-            docker-compose up -d
-          # script: |
-          #   # Login
-          #   echo ${{ secrets.EVO_CR_PWD }} | docker login ${{ secrets.CR_URI }} --username ${{ secrets.EVO_CR_LOGIN }} --password-stdin
-          #   # Stop running container
-          #   docker stop $(echo ${{ env.IMAGE_NAME_SERVER }})
-          #   docker stop $(echo ${{ env.IMAGE_NAME_TG }})
-          #   # Remove old container
-          #   docker rm $(echo ${{ env.IMAGE_NAME_SERVER }})
-          #   docker rm $(echo ${{ env.IMAGE_NAME_TG }})
-          #   # Run a new container from a new image
-          #   docker run -d \
-          #   --restart always \
-          #   --publish 7070:7070 \
-          #   --name $(echo ${{ env.CONTAINER_NAME_SERVER }}) \
-          #   $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME_SERVER }}):$(echo ${{ github.sha }})
-          #   docker run -d \
-          #   --restart always \
-          #   --publish 7071:7071 \
-          #   --name $(echo ${{ env.CONTAINER_NAME_TG }}) \
-          #   $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME_TG }}):$(echo ${{ github.sha }})
+            # Stop running container
+            docker stop $(echo ${{ env.IMAGE_NAME_SERVER }})
+            docker stop $(echo ${{ env.IMAGE_NAME_TG }})
+            # Remove old container
+            docker rm $(echo ${{ env.IMAGE_NAME_SERVER }})
+            docker rm $(echo ${{ env.IMAGE_NAME_TG }})
+            # Run a new container from a new image
+            docker run -d \
+            --restart always \
+            --publish 7070:7070 \
+            --name $(echo ${{ env.CONTAINER_NAME_SERVER }}) \
+            $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME_SERVER }}):$(echo ${{ github.sha }})
+            docker run -d \
+            --restart always \
+            --publish 7071:7071 \
+            --name $(echo ${{ env.CONTAINER_NAME_TG }}) \
+            $(echo ${{ secrets.CR_URI }})/$(echo ${{ env.IMAGE_NAME_TG }}):$(echo ${{ github.sha }})
+            docker network create apex-map-checker-network
+            docker network connect apex-map-checker-network $(echo ${{ env.CONTAINER_NAME_SERVER }})
+            docker network connect apex-map-checker-network $(echo ${{ env.CONTAINER_NAME_TG }})
