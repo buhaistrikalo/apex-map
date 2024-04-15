@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -84,11 +85,13 @@ func getNextMapTime(mapNumber int64, mapDuration int64, timeOwnInt int64) string
 	return nextMapTime
 }
 
-func getDuration (timestamp int64, mapNumber int64, timeOwnInt int64) string {
-	eventDuration := int64(5400) 
+func getDuration(timestamp int64, mapNumber int64, timeOwnInt int64) string {
+	eventDuration := int64(5400)
 	var timeRemaining int64 = (mapNumber + 1) * eventDuration - (timestamp - timeOwnInt)
-    timeRemainingFormatted := time.Duration(timeRemaining) * time.Second
-	return timeRemainingFormatted.String()
+	hours := timeRemaining / 3600
+	minutes := (timeRemaining % 3600) / 60
+	seconds := timeRemaining % 60
+	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
 func getMap(mapNumber int64) string {
