@@ -12,7 +12,6 @@ import (
 )
 
 func init() {
-    // loads values from .env into the system
     if err := godotenv.Load(); err != nil {
         log.Print("No .env file found")
     }
@@ -48,7 +47,6 @@ func apexMapCheckerHandler(w http.ResponseWriter, r *http.Request) {
 	queryTimeInt, err := strconv.ParseInt(queryTime, 10, 64)
 	if err != nil {
 		log.Println("Failed to parse queryTime:", err)
-		// Handle the error accordingly
 		return
 	}
 	if queryTime != "" {
