@@ -62,15 +62,6 @@ func main() {
 		} else if update.CallbackQuery != nil {
 			chatID := update.CallbackQuery.Message.Chat.ID
 			date := update.CallbackQuery.Message.Date
-			resp, err := bot.Request(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID))
-			if err != nil {
-				log.Printf("Failed to delete message: %v", err)
-				continue
-			}
-			if !resp.Ok {
-				log.Printf("Failed to delete message: response not OK")
-				continue
-			}
 			sendMap(bot, chatID, date)
 		}
 	}
