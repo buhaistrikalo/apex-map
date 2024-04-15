@@ -44,6 +44,9 @@ func apexMapCheckerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	queryTime := r.URL.Query().Get("time")
+	if queryTime == "" {
+		queryTime = strconv.FormatInt(time.Now().Unix(), 10)
+	}
 	queryTimeInt, err := strconv.ParseInt(queryTime, 10, 64)
 	if err != nil {
 		log.Println("Failed to parse queryTime:", err)

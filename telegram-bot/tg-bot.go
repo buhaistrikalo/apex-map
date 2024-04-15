@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -117,7 +116,7 @@ func translateTime(inputTime string) string {
 
 func getMap(time int64) (*Response, error) {
 	serverUrl := os.Getenv("SERVER_URL")
-	url := serverUrl + "api/apex-map?time=" + strconv.FormatInt(time, 10)
+	url := serverUrl + "api/apex-map"
 
     req, err := http.NewRequest("GET", url, nil)
     if err != nil {
