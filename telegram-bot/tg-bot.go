@@ -52,7 +52,7 @@ func main() {
 		if update.Message != nil { 
 			command := update.Message.Command()
 			if command == "map" {
-				sendMap(bot, update.Message.Chat.ID, update.Message.Date)
+				sendMap(bot, update.Message.Chat.ID)
 			}
 			if command == "ping" {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "pong")
@@ -60,14 +60,13 @@ func main() {
 			}
 		} else if update.CallbackQuery != nil {
 			chatID := update.CallbackQuery.Message.Chat.ID
-			date := update.CallbackQuery.Message.Date
-			sendMap(bot, chatID, date)
+			sendMap(bot, chatID)
 		}
 	}
 }
 
-func sendMap(bot *tgbotapi.BotAPI, chatID int64, date int) {
-	var response, err = getMap(int64(date))
+func sendMap(bot *tgbotapi.BotAPI, chatID int64) {
+	var response, err = getMap()
 	if err != nil {
 		log.Println("Failed to get map:", err)
 		return
@@ -114,7 +113,7 @@ func translateTime(inputTime string) string {
 	return t.Format("15:04:05")
 }
 
-func getMap(time int64) (*Response, error) {
+func getMap() (*Response, error) {
 	serverUrl := os.Getenv("SERVER_URL")
 	url := serverUrl + "api/apex-map"
 
